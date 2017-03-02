@@ -6,8 +6,11 @@ import numpy as np
 
 
 def run_training():
-    if not os.path.exists('out/'):
-        os.makedirs('out/')
+    save_path = 'out'
+    if os.path.exists(save_path):
+        pass
+    else:
+        os.mkdir(save_path)
 
     mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
@@ -19,8 +22,10 @@ def run_training():
     lam = 0.0001
     lr = 0.001
 
+    desired_label = 1
+
     max_epoch = 4000
-    batch_size = 100
+    batch_size = 256
     n_sample, n_dims = mnist.train.images.shape
     n_batch_each_epoch = n_sample // batch_size
 
@@ -49,16 +54,15 @@ def run_training():
                 print("epoch %d, loss %f" % (epoch, aver_loss / n_batch_each_epoch))
 
                 n_sample = 16
-                conditional_label = 1
                 conditional_y = np.zeros([n_sample, n_label])
-                conditional_y[:, conditional_label] = 1
+                conditional_y[:, desired_label] = 1
                 latent = np.random.normal(loc=0.0, scale=1.0, size=[n_sample, n_latent])
                 samples = sess.run(fetches=[model.reconstruct_x],
                                    feed_dict={model.latent_z: latent,
                                               model.y_pl: conditional_y})
-                # print(samples[0].shape)
                 fig = visualize_generate_samples(samples[0])
-                plt.savefig('out/{}.png'.format(str(epoch).zfill(4)), bbox_inches='tight')
+                plt.savefig('{path}/epoch_{epoch}.png'.format(
+                    path=save_path, epoch=epoch), bbox_inches='tight')
                 plt.close(fig)
 
 

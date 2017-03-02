@@ -17,7 +17,7 @@ class Encoder(object):
             if layer_idx is 0:
                 n_layer_input = n_input + n_label
             else:
-                n_layer_input = n_units[layer_idx]
+                n_layer_input = n_units[layer_idx - 1]
             n_unit = n_units[layer_idx]
             self._hidden_layers.append(
                 AffinePlusNonlinearLayer(layer_name, n_layer_input, n_unit, activation))
@@ -35,7 +35,7 @@ class Encoder(object):
     def forward(self, input_tensor_x, input_tensor_y):
         # print(input_tensor_x)
         # print(input_tensor_y)
-        input_tensor = tf.concat_v2(values=[input_tensor_x, input_tensor_y], axis=1)
+        input_tensor = tf.concat(values=[input_tensor_x, input_tensor_y], axis=1)
         # print(input_tensor)
         output_tensor = input_tensor
         for layer_idx in range(self._n_layer):
@@ -45,7 +45,7 @@ class Encoder(object):
 
         # The standard deviation must be positive. Parametrize with a softplus and
         # add a small epsilon for numerical stability
-        # log_sigma_square = 1e-6 + tf.nn.softplus(log_sigma_square)
+        log_sigma_square = 1e-6 + tf.nn.softplus(log_sigma_square)
 
         epsilon = tf.random_normal(shape=tf.shape(log_sigma_square),
                                    mean=0.0,

@@ -17,7 +17,7 @@ class Decoder(object):
             if layer_idx is 0:
                 n_layer_input = n_latent + n_label
             else:
-                n_layer_input = n_units[layer_idx]
+                n_layer_input = n_units[layer_idx - 1]
             n_unit = n_units[layer_idx]
             self._hidden_layers.append(
                 AffinePlusNonlinearLayer(layer_name, n_layer_input, n_unit, activation))
@@ -33,7 +33,7 @@ class Decoder(object):
         self._weight_decay_loss += self._decoder_sigma.get_weight_decay_loss()
 
     def forward(self, input_tensor_y, input_tensor_latent):
-        input_tensor = tf.concat_v2(values=[input_tensor_y, input_tensor_latent], axis=1)
+        input_tensor = tf.concat(values=[input_tensor_y, input_tensor_latent], axis=1)
 
         output_tensor = input_tensor
         for layer_idx in range(self._n_layer):
@@ -41,6 +41,9 @@ class Decoder(object):
         # output_tensor = self._decoder_mu.forward(output_tensor)
         mu = self._decoder_mu.forward(output_tensor)
         log_sigma_square = self._decoder_sigma.forward(output_tensor)
+        # The standard deviation must be positive. Parametrize with a softplus and
+        # add a small epsilon for numerical stability
+        log_sigma_square = 1e-6 + tf.nn.softplus(log_sigma_square)
 
         epsilon = tf.random_normal(shape=tf.shape(log_sigma_square),
                                    mean=0.0,
