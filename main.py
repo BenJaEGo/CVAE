@@ -16,13 +16,13 @@ def run_training():
 
     n_input = 784
     n_label = 10
-    n_encoder_units = [100]
-    n_decoder_units = [100]
-    n_latent = 20
+    n_encoder_units = [200, 100]
+    n_decoder_units = [100, 200]
+    n_latent = 50
     lam = 0.0001
     lr = 0.001
 
-    desired_label = 1
+    desired_label = 5
 
     max_epoch = 4000
     batch_size = 256
